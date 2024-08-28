@@ -216,6 +216,17 @@ impl Mul<f32> for Vector2 {
     }
 }
 
+impl Mul for Vector2 {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        Self {
+            x: self.x * other.x,
+            y: self.y * other.y,
+        }
+    }
+}
+
 impl MulAssign<f32> for Vector2 {
     fn mul_assign(&mut self, scalar: f32) {
         self.x *= scalar;
@@ -406,6 +417,18 @@ impl Mul<Vector3> for f32 {
             x: vec.x * self,
             y: vec.y * self,
             z: vec.z * self,
+        }
+    }
+}
+
+impl Mul for Vector3 {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        Self {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
         }
     }
 }

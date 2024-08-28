@@ -26,7 +26,7 @@ pub struct BaseComponent {
 
 impl BaseComponent {
     pub fn new(owner: Rc<RefCell<Actor>>, update_order: i32) -> Self {
-        let mut component = BaseComponent {
+        let component = BaseComponent {
             owner: owner.clone(),
             update_order,
         };

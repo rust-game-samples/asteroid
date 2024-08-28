@@ -7,9 +7,9 @@ use crate::math::{Matrix4, Vector2, Vector3};
 
 #[derive(Clone)]
 pub enum State {
-    EActive,
-    EPaused,
-    EDead,
+    Active,
+    Paused,
+    Dead,
 }
 
 #[derive(Clone)]
@@ -26,8 +26,8 @@ pub struct Actor {
 
 impl Actor {
     pub fn new(game: Rc<RefCell<Game>>) -> Self {
-        let mut actor = Actor {
-            state: State::EActive,
+        let actor = Actor {
+            state: State::Active,
             position: Vector2::zero(),
             scale: 1.0,
             rotation: 0.0,
@@ -41,7 +41,7 @@ impl Actor {
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        if let State::EActive = self.state {
+        if let State::Active = self.state {
             self.compute_world_transform();
             self.update_components(delta_time);
             self.update_actor(delta_time);
@@ -60,7 +60,7 @@ impl Actor {
     }
 
     pub fn process_input(&mut self, key_state: &[u8]) {
-        if let State::EActive = self.state {
+        if let State::Active = self.state {
             for comp in &self.components {
                 comp.borrow_mut().process_input(key_state);
             }
@@ -114,6 +114,38 @@ impl Actor {
     pub fn set_scale(&mut self, scale: f32) {
         self.scale = scale;
         self.recompute_world_transform = true;
+    }
+
+    pub fn get_position(&self) -> Vector2 {
+        self.position
+    }
+
+    pub fn get_scale(&self) -> f32 {
+        self.scale
+    }
+
+    pub fn get_rotation(&self) -> f32 {
+        self.rotation
+    }
+
+    pub fn get_world_transform(&self) -> Matrix4 {
+        self.world_transform
+    }
+
+    pub fn get_forward(&self) -> Vector2 {
+        Vector2::new(self.rotation.cos(), self.rotation.sin())
+    }
+
+    pub fn get_state(&self) -> &State {
+        &self.state
+    }
+
+    pub fn set_state(&mut self, state: State) {
+        self.state = state;
+    }
+
+    pub fn get_game(&self) -> Rc<RefCell<Game>> {
+        Rc::clone(&self.game)
     }
 }
 
