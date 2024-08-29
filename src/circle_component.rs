@@ -2,18 +2,18 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use crate::actor::Actor;
 use crate::math::Vector2;
+use crate::component::{Component, BaseComponent};
 
+#[derive(Clone)]
 pub struct CircleComponent {
-    owner: Rc<RefCell<Actor>>,
+    base: BaseComponent,
     radius: f32,
 }
 
 impl CircleComponent {
     pub fn new(owner: Rc<RefCell<Actor>>) -> Self {
-        Self {
-            owner,
-            radius: 0.0,
-        }
+        let base = BaseComponent::new(owner, 100);
+        CircleComponent { base, radius: 0.0 }
     }
 
     pub fn set_radius(&mut self, radius: f32) {
@@ -21,11 +21,29 @@ impl CircleComponent {
     }
 
     pub fn get_radius(&self) -> f32 {
-        self.owner.borrow_mut().get_scale() * self.radius
+        self.base.owner.borrow().get_scale() * self.radius
     }
 
     pub fn get_center(&self) -> Vector2 {
-        self.owner.borrow_mut().get_position()
+        self.base.owner.borrow().get_position()
+    }
+}
+
+impl Component for CircleComponent {
+    fn new(owner: Rc<RefCell<Actor>>, update_order: i32) -> Self {
+        CircleComponent::new(owner)
+    }
+
+    fn update(&mut self, _delta_time: f32) {}
+
+    fn get_update_order(&self) -> i32 {
+        self.base.get_update_order()
+    }
+}
+
+impl Drop for CircleComponent {
+    fn drop(&mut self) {
+        self.base.owner.borrow_mut().remove_component(Rc::new(RefCell::new(self.clone())));
     }
 }
 

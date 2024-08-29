@@ -7,21 +7,17 @@ pub trait Component {
     where
         Self: Sized;
 
-    fn drop(&mut self) {}
-
     fn process_input(&mut self, _key_state: &[u8]) {}
 
     fn update(&mut self, delta_time: f32);
-
-    fn on_update_world_transform(&mut self) {}
 
     fn get_update_order(&self) -> i32;
 }
 
 #[derive(Clone)]
 pub struct BaseComponent {
-    owner: Rc<RefCell<Actor>>,
-    update_order: i32,
+    pub owner: Rc<RefCell<Actor>>,
+    pub update_order: i32,
 }
 
 impl BaseComponent {

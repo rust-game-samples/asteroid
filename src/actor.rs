@@ -79,9 +79,9 @@ impl Actor {
                 * Matrix4::create_rotation_z(self.rotation)
                 * Matrix4::create_translation(Vector3::new(self.position.x, self.position.y, 0.0));
 
-            for comp in &self.components {
-                comp.borrow_mut().on_update_world_transform();
-            }
+            // for comp in &self.components {
+            //     comp.borrow_mut().on_update_world_transform();
+            // }
         }
     }
 
