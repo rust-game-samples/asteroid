@@ -1,53 +1,21 @@
 use crate::actor::Actor;
-// use crate::component::Component;
-use crate::math::math::near_zero;
 use std::rc::Rc;
 use std::cell::RefCell;
+use crate::component::{Component, BaseComponent};
 
+#[derive(Clone)]
 pub struct MoveComponent {
-    owner: Rc<RefCell<Actor>>,
+    base: BaseComponent,
     angular_speed: f32,
     forward_speed: f32,
 }
 
 impl MoveComponent {
     pub fn new(owner: Rc<RefCell<Actor>>, update_order: i32) -> Self {
-        // <MoveComponent as Component>::new(owner.clone(), update_order);
-        Self {
-            owner,
+        MoveComponent {
+            base: BaseComponent::new(owner, update_order),
             angular_speed: 0.0,
             forward_speed: 0.0,
-        }
-    }
-
-    pub fn update(&mut self, delta_time: f32) {
-        let mut owner = self.owner.borrow_mut();
-
-        // 角速度に基づいて回転を更新
-        if !near_zero(self.angular_speed, 0.001) {
-            let mut rotation = owner.get_rotation();
-            rotation += self.angular_speed * delta_time;
-            owner.set_rotation(rotation);
-        }
-
-        // 前進速度に基づいて位置を更新
-        if !near_zero(self.forward_speed, 0.001) {
-            let mut position = owner.get_position();
-            position += owner.get_forward() * self.forward_speed * delta_time;
-
-            // スクリーンのラッピング（アステロイドのため）
-            if position.x < -512.0 {
-                position.x = 510.0;
-            } else if position.x > 512.0 {
-                position.x = -510.0;
-            }
-            if position.y < -384.0 {
-                position.y = 382.0;
-            } else if position.y > 384.0 {
-                position.y = -382.0;
-            }
-
-            owner.set_position(position);
         }
     }
 
@@ -56,15 +24,54 @@ impl MoveComponent {
         self.angular_speed
     }
 
-    pub fn set_angular_speed(&mut self, speed: f32) {
-        self.angular_speed = speed;
-    }
-
     pub fn get_forward_speed(&self) -> f32 {
         self.forward_speed
     }
 
+    pub fn set_angular_speed(&mut self, speed: f32) {
+        self.angular_speed = speed;
+    }
+
     pub fn set_forward_speed(&mut self, speed: f32) {
         self.forward_speed = speed;
+    }
+}
+
+impl Component for MoveComponent {
+    fn new(owner: Rc<RefCell<Actor>>, update_order: i32) -> Self {
+        MoveComponent::new(owner, update_order)
+    }
+
+    fn update(&mut self, delta_time: f32) {
+        if self.angular_speed.abs() > f32::EPSILON {
+            let mut rot = self.base.owner.borrow().get_rotation();
+            rot += self.angular_speed * delta_time;
+            self.base.owner.borrow_mut().set_rotation(rot);
+        }
+
+        if self.forward_speed.abs() > f32::EPSILON {
+            let mut pos = self.base.owner.borrow().get_position();
+            let forward = self.base.owner.borrow().get_forward();
+            pos += forward * self.forward_speed * delta_time;
+
+            // 画面外に出た場合のスクリーンラップ処理（Asteroid専用）
+            if pos.x < 0.0 { pos.x = 1022.0; }
+            else if pos.x > 1024.0 { pos.x = 2.0; }
+
+            if pos.y < 0.0 { pos.y = 766.0; }
+            else if pos.y > 768.0 { pos.y = 2.0; }
+
+            self.base.owner.borrow_mut().set_position(pos);
+        }
+    }
+
+    fn get_update_order(&self) -> i32 {
+        self.base.get_update_order()
+    }
+}
+
+impl Drop for MoveComponent {
+    fn drop(&mut self) {
+        self.base.owner.borrow_mut().remove_component(Rc::new(RefCell::new(self.clone())));
     }
 }

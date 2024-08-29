@@ -9,6 +9,7 @@ mod random;
 mod move_component;
 mod sprite_component;
 mod shader;
+mod input_component;
 
 use crate::game::Game;
 
